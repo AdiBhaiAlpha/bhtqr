@@ -48,13 +48,18 @@
             margin: 10px 0;
         }
 
-        #qrcode {
+        #qrcode-container {
             margin-top: 20px;
-            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            margin-bottom: 10px;
         }
 
         a#download {
-            display: none;
             text-decoration: none;
         }
     </style>
@@ -64,8 +69,10 @@
         <h1>Black Hunter Team BHT</h1>
         <input type="text" id="text" placeholder="Enter text or URL">
         <button onclick="generateQR()">Generate QR Code</button>
-        <div id="qrcode"></div>
-        <a id="download">
+        <div id="qrcode-container">
+            <canvas id="qrcode-canvas" style="display: none;"></canvas>
+        </div>
+        <a id="download" style="display: none;">
             <button>Download QR Code</button>
         </a>
         <p class="footer">2025 © by Black Hunter Team BHT</p>
@@ -75,42 +82,41 @@
         function generateQR() {
             const text = document.getElementById('text').value;
             if (text) {
-                const header = "\n\n";
-                const footer = "\n\n by Black Hunter Team (BHT) © 2025";
-                const fullText = header + text + footer;
-
-                const qr = qrcode(0, 'M');
-                qr.addData(fullText);
+                const qr = qrcode(0, 'H'); // High error correction level
+                qr.addData(text + "\n\n by Black Hunter Team (BHT) © 2025");
                 qr.make();
 
-                const size = 500; // High resolution size
-                const canvas = document.createElement('canvas');
+                const size = 1024; // High resolution canvas size
+                const canvas = document.getElementById('qrcode-canvas');
+                const ctx = canvas.getContext('2d');
                 canvas.width = size;
                 canvas.height = size;
-                const ctx = canvas.getContext('2d');
 
+                // Clear previous QR code
+                ctx.clearRect(0, 0, size, size);
+
+                // Render QR code
                 const qrImage = new Image();
-                qrImage.src = qr.createDataURL();
+                qrImage.src = qr.createDataURL(10, 0);
                 qrImage.onload = function () {
                     ctx.drawImage(qrImage, 0, 0, size, size);
 
-                    // Add watermark
+                    // Add watermark circle
+                    const radius = size / 8; // Circle radius
                     ctx.fillStyle = 'white';
                     ctx.beginPath();
-                    ctx.arc(size / 2, size / 2, 70, 0, Math.PI * 2);
+                    ctx.arc(size / 2, size / 2, radius, 0, Math.PI * 2);
                     ctx.fill();
 
+                    // Add watermark text
                     ctx.fillStyle = 'black';
+                    ctx.font = `${radius / 2}px Arial`;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.font = 'bold 30px Arial';
                     ctx.fillText('BHT', size / 2, size / 2);
 
-                    const qrContainer = document.getElementById('qrcode');
-                    qrContainer.innerHTML = '';
-                    qrContainer.appendChild(canvas);
-
-                    // Enable download button
+                    // Show canvas and enable download
+                    canvas.style.display = 'block';
                     const downloadLink = document.getElementById('download');
                     downloadLink.href = canvas.toDataURL('image/png');
                     downloadLink.download = 'BHT_QR_Code.png';
