@@ -53,27 +53,6 @@
             position: relative;
         }
 
-        #qrcode img {
-            display: block;
-            margin: 0 auto;
-        }
-
-        .watermark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 18px;
-            font-weight: bold;
-            color: black;
-            text-align: center;
-            background-color: white;
-            border-radius: 50%;
-            width: 80px;
-            height: 80px;
-            line-height: 80px;
-        }
-
         a#download {
             display: none;
             text-decoration: none;
@@ -104,18 +83,11 @@
                 qr.addData(fullText);
                 qr.make();
 
-                const qrContainer = document.getElementById('qrcode');
-                qrContainer.innerHTML = `
-                    <canvas id="qrCanvas"></canvas>
-                    <div class="watermark">BHT</div>
-                `;
-
-                const canvas = document.getElementById('qrCanvas');
-                const ctx = canvas.getContext('2d');
-                const size = 256;
-
+                const size = 500; // High resolution size
+                const canvas = document.createElement('canvas');
                 canvas.width = size;
                 canvas.height = size;
+                const ctx = canvas.getContext('2d');
 
                 const qrImage = new Image();
                 qrImage.src = qr.createDataURL();
@@ -125,14 +97,18 @@
                     // Add watermark
                     ctx.fillStyle = 'white';
                     ctx.beginPath();
-                    ctx.arc(size / 2, size / 2, 40, 0, Math.PI * 2);
+                    ctx.arc(size / 2, size / 2, 70, 0, Math.PI * 2);
                     ctx.fill();
 
                     ctx.fillStyle = 'black';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.font = 'bold 18px Arial';
+                    ctx.font = 'bold 30px Arial';
                     ctx.fillText('BHT', size / 2, size / 2);
+
+                    const qrContainer = document.getElementById('qrcode');
+                    qrContainer.innerHTML = '';
+                    qrContainer.appendChild(canvas);
 
                     // Enable download button
                     const downloadLink = document.getElementById('download');
